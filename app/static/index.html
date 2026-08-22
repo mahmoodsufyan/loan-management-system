@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏛️ Enterprise Loan & Amortization Core Engine</title>
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.5); border-radius: 4px; }
+  </style>
+</head>
+<body class="h-full flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navbar -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white text-lg">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+            Lending Engine & Amortization Core
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">Production API</span>
+          </h1>
+          <p class="text-xs text-slate-400">High-Precision Amortization, Finite State Machine & Financial Reporting</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <a href="/docs" target="_blank" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-code"></i> OpenAPI Docs
+        </a>
+        <a href="/redoc" target="_blank" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open"></i> ReDoc
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="bg-slate-900/50 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-4">
+      <button id="tabBtnCalc" onclick="switchTab('calculator')" class="py-3 px-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition">
+        <i class="fa-solid fa-calculator"></i> Amortization Engine
+      </button>
+      <button id="tabBtnSettlement" onclick="switchTab('settlement')" class="py-3 px-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <i class="fa-solid fa-hand-holding-dollar"></i> Early Settlement & Rebate
+      </button>
+      <button id="tabBtnWorkflow" onclick="switchTab('workflow')" class="py-3 px-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <i class="fa-solid fa-diagram-project"></i> Application Lifecycle (FSM)
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: AMORTIZATION CALCULATOR -->
+    <!-- ========================================== -->
+    <div id="tabContentCalc" class="space-y-6">
+      
+      <!-- Top Grid: Inputs & KPI Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Input Form (5 cols) -->
+        <div class="lg:col-span-5 glass-card rounded-2xl p-5 shadow-xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-indigo-400"></i> Loan Parameters
+            </h2>
+            <button onclick="resetDefaults()" class="text-xs text-indigo-400 hover:underline">Reset</button>
+          </div>
+
+          <form id="calcForm" onsubmit="handleCalculate(event)" class="space-y-3.5">
+            <div>
+              <div class="flex justify-between text-xs font-medium text-slate-300 mb-1">
+                <label for="principal">Principal Amount ($)</label>
+                <span id="principalDisplay" class="text-indigo-400 font-bold">$50,000.00</span>
+              </div>
+              <input type="number" id="principal" value="50000" min="1000" max="10000000" step="500" required
+                     class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="annualRate" class="block text-xs font-medium text-slate-300 mb-1">Annual Rate (%)</label>
+                <input type="number" id="annualRate" value="12.0" min="0" max="100" step="0.1" required
+                       class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              </div>
+              <div>
+                <label for="tenorMonths" class="block text-xs font-medium text-slate-300 mb-1">Tenor (Months)</label>
+                <input type="number" id="tenorMonths" value="24" min="1" max="360" step="1" required
+                       class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label for="calcMethod" class="block text-xs font-medium text-slate-300 mb-1">Calculation Strategy</label>
+              <select id="calcMethod" class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-medium text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <option value="equal_installments">Equal Installments (Annuity / French Method)</option>
+                <option value="reducing_balance">Reducing Balance (Declining Principal)</option>
+                <option value="flat_rate_murabaha">Flat Rate / Islamic Murabaha (المرابحة)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="frequency" class="block text-xs font-medium text-slate-300 mb-1">Payment Frequency</label>
+                <select id="frequency" class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-medium text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="semi_annually">Semi-Annually</option>
+                  <option value="annually">Annually</option>
+                </select>
+              </div>
+              <div>
+                <label for="gracePeriod" class="block text-xs font-medium text-slate-300 mb-1">Grace Period (Months)</label>
+                <input type="number" id="gracePeriod" value="0" min="0" max="60" step="1"
+                       class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label for="startDate" class="block text-xs font-medium text-slate-300 mb-1">First Disbursement Date</label>
+              <input type="date" id="startDate" class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-medium text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+
+            <button type="submit" id="btnCalculate" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-calculator"></i> Compute Amortization Schedule
+            </button>
+          </form>
+        </div>
+
+        <!-- KPI Cards & Chart (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- KPI Metrics Row -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div class="glass-card rounded-2xl p-4">
+              <p class="text-xs text-slate-400 font-medium">Installment (PMT)</p>
+              <h3 id="kpiPmt" class="text-lg sm:text-xl font-black text-white mt-1">$2,353.67</h3>
+              <span id="kpiFreq" class="text-[10px] text-indigo-400 font-semibold uppercase">Per Month</span>
+            </div>
+            <div class="glass-card rounded-2xl p-4">
+              <p class="text-xs text-slate-400 font-medium">Total Profit/Interest</p>
+              <h3 id="kpiProfit" class="text-lg sm:text-xl font-black text-amber-400 mt-1">$6,488.13</h3>
+              <span id="kpiProfitPct" class="text-[10px] text-slate-400 font-semibold">12.98% of Principal</span>
+            </div>
+            <div class="glass-card rounded-2xl p-4">
+              <p class="text-xs text-slate-400 font-medium">Total Payable</p>
+              <h3 id="kpiTotalPayable" class="text-lg sm:text-xl font-black text-emerald-400 mt-1">$56,488.13</h3>
+              <span class="text-[10px] text-emerald-500/80 font-semibold">Principal + Profit</span>
+            </div>
+            <div class="glass-card rounded-2xl p-4">
+              <p class="text-xs text-slate-400 font-medium">Total Installments</p>
+              <h3 id="kpiInstallments" class="text-lg sm:text-xl font-black text-cyan-400 mt-1">24</h3>
+              <span class="text-[10px] text-slate-400 font-semibold">Scheduled cycles</span>
+            </div>
+          </div>
+
+          <!-- Chart Card -->
+          <div class="glass-card rounded-2xl p-5 shadow-xl">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-chart-area text-indigo-400"></i> Repayment Breakdown Over Time
+              </h3>
+              <span class="text-xs text-slate-400">Principal vs. Interest</span>
+            </div>
+            <div class="h-64 w-full">
+              <canvas id="scheduleChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Schedule Table Card -->
+      <div class="glass-card rounded-2xl p-5 shadow-xl space-y-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-table-list text-cyan-400"></i> Amortization Schedule Table
+            </h3>
+            <p class="text-xs text-slate-400">Period-by-period financial breakdown balanced to exact precision</p>
+          </div>
+          <button onclick="exportCSV()" class="px-3 py-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition flex items-center gap-1.5">
+            <i class="fa-solid fa-download"></i> Export Table (CSV)
+          </button>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar max-h-96 rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase tracking-wider sticky top-0 z-10">
+              <tr>
+                <th class="py-3 px-3.5 border-b border-slate-800">#</th>
+                <th class="py-3 px-3.5 border-b border-slate-800">Due Date</th>
+                <th class="py-3 px-3.5 border-b border-slate-800 text-right">Opening Balance</th>
+                <th class="py-3 px-3.5 border-b border-slate-800 text-right text-indigo-300">Principal</th>
+                <th class="py-3 px-3.5 border-b border-slate-800 text-right text-amber-300">Profit / Interest</th>
+                <th class="py-3 px-3.5 border-b border-slate-800 text-right text-emerald-300">Total Installment</th>
+                <th class="py-3 px-3.5 border-b border-slate-800 text-right">Closing Balance</th>
+                <th class="py-3 px-3.5 border-b border-slate-800 text-center">Type</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleTableBody" class="divide-y divide-slate-800/60 bg-slate-900/40 text-slate-200">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: EARLY SETTLEMENT & REBATE -->
+    <!-- ========================================== -->
+    <div id="tabContentSettlement" class="hidden space-y-6">
+      <div class="max-w-3xl mx-auto glass-card rounded-2xl p-6 shadow-xl space-y-5">
+        <div class="border-b border-slate-700/60 pb-3">
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-hand-holding-dollar text-emerald-400"></i> Early Settlement & Profit Rebate Calculator
+          </h2>
+          <p class="text-xs text-slate-400">Calculate net payoff amount and deduct unearned interest/murabaha profit.</p>
+        </div>
+
+        <form id="settlementForm" onsubmit="handleSettlement(event)" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Remaining Principal ($)</label>
+              <input type="number" id="settlePrincipal" value="25000" min="0" step="100" required
+                     class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Unearned Future Profit ($)</label>
+              <input type="number" id="settleProfit" value="3200" min="0" step="10" required
+                     class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Rebate Percentage (%)</label>
+              <input type="number" id="settleRebatePct" value="100" min="0" max="100" step="5" required
+                     class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1">Early Settlement Fee ($)</label>
+              <input type="number" id="settleFee" value="0" min="0" step="10"
+                     class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition">
+            Calculate Net Payoff
+          </button>
+        </form>
+
+        <!-- Settlement Results -->
+        <div id="settlementResults" class="p-4 rounded-xl bg-slate-950/70 border border-emerald-500/30 space-y-3">
+          <div class="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
+            <span class="text-slate-400">Total Waived / Profit Rebate:</span>
+            <span id="resRebate" class="font-bold text-amber-400">$3,200.00</span>
+          </div>
+          <div class="flex justify-between items-center text-base font-bold">
+            <span class="text-white">Net Early Settlement Payoff:</span>
+            <span id="resNetPayoff" class="text-xl text-emerald-400 font-black">$25,000.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: APPLICATION LIFECYCLE (FSM) -->
+    <!-- ========================================== -->
+    <div id="tabContentWorkflow" class="hidden space-y-6">
+      
+      <!-- New Application Creator -->
+      <div class="glass-card rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <i class="fa-solid fa-plus-circle text-indigo-400"></i> Initialize New Loan Application
+          </h2>
+        </div>
+
+        <form id="newLoanForm" onsubmit="handleCreateLoan(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Applicant Full Name</label>
+            <input type="text" id="appApplicantName" placeholder="e.g. Tariq Mansoor" required
+                   class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">National ID / Commercial Reg.</label>
+            <input type="text" id="appNationalId" placeholder="e.g. NID-992810" required
+                   class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Product Type</label>
+            <select id="appProductType" class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-medium text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Microfinance / SME">Microfinance / SME</option>
+              <option value="Agricultural Credit">Agricultural Credit</option>
+              <option value="Islamic Murabaha">Islamic Murabaha</option>
+              <option value="Commercial Equipment">Commercial Equipment</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Requested Principal ($)</label>
+            <input type="number" id="appPrincipal" value="35000" min="1000" step="500" required
+                   class="w-full px-3 py-2 bg-slate-950/60 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+
+          <div class="sm:col-span-2 lg:col-span-4 flex justify-end">
+            <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-1.5">
+              <i class="fa-solid fa-file-circle-plus"></i> Submit Application to Database
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Application List & State Machine Controller -->
+      <div class="glass-card rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-indigo-400"></i> Active Applications & Approval Pipeline
+            </h3>
+            <p class="text-xs text-slate-400">Finite State Machine (FSM): draft ➔ submitted ➔ credit_review ➔ approved ➔ disbursed ➔ active ➔ settled</p>
+          </div>
+          <button onclick="loadLoansList()" class="px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg transition flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+        </div>
+
+        <div id="loansListContainer" class="space-y-3">
+          <!-- Loaded dynamically -->
+          <div class="text-center py-8 text-slate-400 text-sm">
+            <i class="fa-solid fa-spinner fa-spin text-indigo-400 text-xl mb-2"></i>
+            <p>Loading database records...</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Application Audit Modal -->
+  <div id="auditModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card max-w-xl w-full rounded-2xl p-6 shadow-2xl space-y-4 border border-slate-700">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i> Audit History & State Transitions
+        </h3>
+        <button onclick="closeAuditModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+      <div id="auditTimeline" class="max-h-72 overflow-y-auto custom-scrollbar space-y-3 pr-2">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    let currentScheduleData = [];
+    let scheduleChart = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+      // Set default start date to today
+      const today = new Date().toISOString().split('T')[0];
+      const startEl = document.getElementById("startDate");
+      if (startEl) startEl.value = today;
+      
+      // Perform initial calculation
+      handleCalculate();
+      
+      // Load loan applications
+      loadLoansList();
+    });
+
+    function switchTab(tab) {
+      document.getElementById("tabContentCalc").classList.toggle("hidden", tab !== "calculator");
+      document.getElementById("tabContentSettlement").classList.toggle("hidden", tab !== "settlement");
+      document.getElementById("tabContentWorkflow").classList.toggle("hidden", tab !== "workflow");
+
+      // Update button borders
+      document.getElementById("tabBtnCalc").className = (tab === "calculator") 
+        ? "py-3 px-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition" 
+        : "py-3 px-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+      
+      document.getElementById("tabBtnSettlement").className = (tab === "settlement") 
+        ? "py-3 px-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition" 
+        : "py-3 px-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+      
+      document.getElementById("tabBtnWorkflow").className = (tab === "workflow") 
+        ? "py-3 px-3 text-sm font-medium border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2 transition" 
+        : "py-3 px-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+
+      if (tab === "workflow") {
+        loadLoansList();
+      }
+    }
+
+    async function handleCalculate(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      
+      const payload = {
+        principal: parseFloat(document.getElementById("principal").value) || 50000,
+        annual_rate: parseFloat(document.getElementById("annualRate").value) || 12.0,
+        tenor_months: parseInt(document.getElementById("tenorMonths").value) || 24,
+        start_date: document.getElementById("startDate").value || new Date().toISOString().split('T')[0],
+        method: document.getElementById("calcMethod").value || "equal_installments",
+        frequency: document.getElementById("frequency").value || "monthly",
+        grace_period_months: parseInt(document.getElementById("gracePeriod").value) || 0
+      };
+
+      const dispEl = document.getElementById("principalDisplay");
+      if (dispEl) {
+        dispEl.innerText = "$" + Number(payload.principal).toLocaleString(undefined, {minimumFractionDigits: 2});
+      }
+
+      try {
+        const res = await fetch("/api/v1/calculator/schedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || "Calculation failed");
+        }
+        const data = await res.json();
+        currentScheduleData = data.schedule || [];
+
+        // Update KPIs
+        const firstInstallment = (data.schedule && data.schedule[0]) ? data.schedule[0].total_installment : 0;
+        document.getElementById("kpiPmt").innerText = "$" + Number(firstInstallment).toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById("kpiProfit").innerText = "$" + Number(data.total_profit).toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById("kpiTotalPayable").innerText = "$" + Number(data.total_payable).toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById("kpiInstallments").innerText = data.total_installments;
+        document.getElementById("kpiFreq").innerText = "Per " + String(data.frequency || '').toLowerCase();
+
+        const profitPct = ((Number(data.total_profit) / Number(data.principal)) * 100).toFixed(2);
+        document.getElementById("kpiProfitPct").innerText = profitPct + "% of Principal";
+
+        // Render Table & Chart
+        renderScheduleTable(data.schedule);
+        renderChart(data.schedule);
+
+      } catch (err) {
+        console.error("Calculation Error:", err);
+      }
+    }
+
+    function renderScheduleTable(schedule) {
+      const tbody = document.getElementById("scheduleTableBody");
+      if (!tbody) return;
+      
+      if (!schedule || schedule.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-slate-500">No schedule generated.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = schedule.map(function(row) {
+        const isGrace = Boolean(row.is_grace_period);
+        const badge = isGrace 
+          ? '<span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">Grace</span>' 
+          : '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Standard</span>';
+
+        return '<tr class="hover:bg-slate-800/50 transition">' +
+          '<td class="py-2.5 px-3.5 font-bold text-slate-400">' + row.installment_number + '</td>' +
+          '<td class="py-2.5 px-3.5 font-medium">' + row.due_date + '</td>' +
+          '<td class="py-2.5 px-3.5 text-right font-mono text-slate-300">$' + Number(row.opening_balance).toLocaleString(undefined, {minimumFractionDigits: 2}) + '</td>' +
+          '<td class="py-2.5 px-3.5 text-right font-mono text-indigo-300 font-semibold">$' + Number(row.principal).toLocaleString(undefined, {minimumFractionDigits: 2}) + '</td>' +
+          '<td class="py-2.5 px-3.5 text-right font-mono text-amber-300 font-semibold">$' + Number(row.profit).toLocaleString(undefined, {minimumFractionDigits: 2}) + '</td>' +
+          '<td class="py-2.5 px-3.5 text-right font-mono text-emerald-300 font-bold">$' + Number(row.total_installment).toLocaleString(undefined, {minimumFractionDigits: 2}) + '</td>' +
+          '<td class="py-2.5 px-3.5 text-right font-mono text-slate-300 font-semibold">$' + Number(row.closing_balance).toLocaleString(undefined, {minimumFractionDigits: 2}) + '</td>' +
+          '<td class="py-2.5 px-3.5 text-center">' + badge + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderChart(schedule) {
+      const canvas = document.getElementById('scheduleChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx || !window.Chart) return;
+
+      const labels = schedule.map(function(s) { return 'Inst #' + s.installment_number; });
+      const principalData = schedule.map(function(s) { return Number(s.principal); });
+      const profitData = schedule.map(function(s) { return Number(s.profit); });
+      const balanceData = schedule.map(function(s) { return Number(s.closing_balance); });
+
+      if (scheduleChart) {
+        scheduleChart.destroy();
+      }
+
+      scheduleChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Principal ($)',
+              data: principalData,
+              backgroundColor: 'rgba(99, 102, 241, 0.85)',
+              borderRadius: 4,
+              stack: 'installment'
+            },
+            {
+              label: 'Profit / Interest ($)',
+              data: profitData,
+              backgroundColor: 'rgba(251, 191, 36, 0.85)',
+              borderRadius: 4,
+              stack: 'installment'
+            },
+            {
+              label: 'Remaining Balance ($)',
+              data: balanceData,
+              type: 'line',
+              borderColor: 'rgba(52, 211, 153, 1)',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              tension: 0.2,
+              yAxisID: 'y'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#94a3b8', font: { size: 11 } }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#64748b', maxTicksLimit: 12 },
+              grid: { color: 'rgba(255,255,255,0.04)' }
+            },
+            y: {
+              ticks: { color: '#64748b' },
+              grid: { color: 'rgba(255,255,255,0.06)' }
+            }
+          }
+        }
+      });
+    }
+
+    async function handleSettlement(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const payload = {
+        remaining_principal: parseFloat(document.getElementById("settlePrincipal").value) || 0,
+        unearned_profit: parseFloat(document.getElementById("settleProfit").value) || 0,
+        rebate_percentage: parseFloat(document.getElementById("settleRebatePct").value) || 100,
+        settlement_fee: parseFloat(document.getElementById("settleFee").value) || 0
+      };
+
+      try {
+        const res = await fetch("/api/v1/calculator/early-settlement", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        document.getElementById("resRebate").innerText = "$" + Number(data.rebate_amount).toLocaleString(undefined, {minimumFractionDigits: 2});
+        document.getElementById("resNetPayoff").innerText = "$" + Number(data.net_payoff_amount).toLocaleString(undefined, {minimumFractionDigits: 2});
+      } catch (err) {
+        console.error("Settlement Error:", err);
+      }
+    }
+
+    async function loadLoansList() {
+      const container = document.getElementById("loansListContainer");
+      if (!container) return;
+      
+      try {
+        const res = await fetch("/api/v1/loans");
+        if (!res.ok) throw new Error("Failed to fetch loans");
+        const loans = await res.json();
+
+        if (!loans || loans.length === 0) {
+          container.innerHTML = '<div class="text-center py-6 text-slate-400 text-xs">No loan applications found in database. Create your first application above.</div>';
+          return;
+        }
+
+        container.innerHTML = loans.map(function(l) {
+          const statusVal = String(l.status || '').toLowerCase();
+          const statusColors = {
+            "draft": "bg-slate-700 text-slate-300 border-slate-600",
+            "submitted": "bg-blue-900/60 text-blue-300 border-blue-600",
+            "credit_review": "bg-amber-900/60 text-amber-300 border-amber-600",
+            "approved": "bg-emerald-900/60 text-emerald-300 border-emerald-600",
+            "disbursed": "bg-cyan-900/60 text-cyan-300 border-cyan-600",
+            "active": "bg-indigo-900/60 text-indigo-300 border-indigo-600",
+            "settled": "bg-teal-900/60 text-teal-300 border-teal-600",
+            "rejected": "bg-rose-900/60 text-rose-300 border-rose-600"
+          };
+
+          const nextActions = {
+            "draft": [{ to: "submitted", label: "Submit Application", icon: "fa-paper-plane", color: "bg-blue-600 hover:bg-blue-500" }],
+            "submitted": [{ to: "credit_review", label: "Start Review", icon: "fa-magnifying-glass-dollar", color: "bg-amber-600 hover:bg-amber-500" }],
+            "credit_review": [
+              { to: "approved", label: "Approve Loan", icon: "fa-check", color: "bg-emerald-600 hover:bg-emerald-500" },
+              { to: "rejected", label: "Reject", icon: "fa-xmark", color: "bg-rose-600 hover:bg-rose-500" }
+            ],
+            "approved": [{ to: "disbursed", label: "Disburse Funds", icon: "fa-money-bill-transfer", color: "bg-cyan-600 hover:bg-cyan-500" }],
+            "disbursed": [{ to: "active", label: "Activate Repayments", icon: "fa-play", color: "bg-indigo-600 hover:bg-indigo-500" }],
+            "active": [{ to: "settled", label: "Full Payoff / Settle", icon: "fa-flag-checkered", color: "bg-teal-600 hover:bg-teal-500" }]
+          };
+
+          const actions = nextActions[statusVal] || [];
+          const histJson = JSON.stringify(l.status_history || []).replace(/'/g, "&#39;");
+
+          const actionButtons = actions.map(function(act) {
+            return '<button onclick="transitionLoan('' + l.id + '', '' + act.to + '')" class="px-3 py-1.5 ' + act.color + ' text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-1">' +
+              '<i class="fa-solid ' + act.icon + '"></i> ' + act.label +
+            '</button>';
+          }).join('');
+
+          return '<div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-slate-700 transition flex flex-col md:flex-row items-start md:items-center justify-between gap-4">' +
+            '<div class="space-y-1">' +
+              '<div class="flex items-center gap-2">' +
+                '<span class="font-mono text-xs font-bold text-indigo-400">' + l.id + '</span>' +
+                '<span class="px-2 py-0.5 rounded text-[10px] font-bold border uppercase ' + (statusColors[statusVal] || '') + '">' + l.status + '</span>' +
+              '</div>' +
+              '<h4 class="text-sm font-bold text-white">' + l.applicant_name + ' <span class="text-xs font-normal text-slate-400">(' + l.national_id + ')</span></h4>' +
+              '<div class="flex items-center gap-3 text-xs text-slate-400">' +
+                '<span><i class="fa-solid fa-tag text-slate-500"></i> ' + l.product_type + '</span>' +
+                '<span><i class="fa-solid fa-dollar-sign text-slate-500"></i> $' + Number(l.principal).toLocaleString() + '</span>' +
+                '<span><i class="fa-solid fa-calendar text-slate-500"></i> ' + l.tenor_months + ' mos @ ' + l.annual_rate + '%</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex items-center flex-wrap gap-2">' +
+              '<button onclick='viewAudit(' + histJson + ')' class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition flex items-center gap-1">' +
+                '<i class="fa-solid fa-clock-rotate-left"></i> Audit' +
+              '</button>' +
+              '<a href="/api/v1/loans/' + l.id + '/export-pdf" target="_blank" class="px-2.5 py-1.5 bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs font-semibold rounded-lg transition flex items-center gap-1">' +
+                '<i class="fa-solid fa-file-pdf"></i> PDF' +
+              '</a>' +
+              actionButtons +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+      } catch (err) {
+        container.innerHTML = '<div class="text-rose-400 text-xs py-4">Failed to load records: ' + err.message + '</div>';
+      }
+    }
+
+    async function handleCreateLoan(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const payload = {
+        applicant_name: document.getElementById("appApplicantName").value,
+        national_id: document.getElementById("appNationalId").value,
+        product_type: document.getElementById("appProductType").value,
+        principal: parseFloat(document.getElementById("appPrincipal").value) || 10000,
+        annual_rate: parseFloat(document.getElementById("annualRate").value) || 12,
+        tenor_months: parseInt(document.getElementById("tenorMonths").value) || 24,
+        method: document.getElementById("calcMethod").value || "equal_installments",
+        frequency: document.getElementById("frequency").value || "monthly",
+        grace_period_months: parseInt(document.getElementById("gracePeriod").value) || 0
+      };
+
+      try {
+        const res = await fetch("/api/v1/loans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert("Loan Application created successfully in DRAFT state!");
+        document.getElementById("newLoanForm").reset();
+        loadLoansList();
+      } catch (err) {
+        alert("Error creating loan: " + err.message);
+      }
+    }
+
+    async function transitionLoan(loanId, targetStatus) {
+      try {
+        const res = await fetch("/api/v1/loans/" + loanId + "/status", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ target_status: targetStatus, notes: "State changed by Web Dashboard Operator" })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Transition failed");
+        }
+        loadLoansList();
+      } catch (err) {
+        alert("Workflow error: " + err.message);
+      }
+    }
+
+    function viewAudit(history) {
+      const container = document.getElementById("auditTimeline");
+      if (!container) return;
+      if (!history || history.length === 0) {
+        container.innerHTML = '<div class="text-slate-400 text-xs py-2">No audit records found.</div>';
+      } else {
+        container.innerHTML = history.map(function(item) {
+          return '<div class="relative pl-6 pb-4 border-l-2 border-slate-700 last:border-none">' +
+            '<div class="absolute -left-1.5 top-0 w-3 h-3 bg-indigo-500 rounded-full"></div>' +
+            '<div class="text-xs font-bold text-white uppercase">' + item.status + '</div>' +
+            '<div class="text-[11px] text-slate-400">' + (item.timestamp || '') + ' &bull; <span class="text-indigo-400">' + (item.actor || 'System') + '</span></div>' +
+            '<div class="text-xs text-slate-300 mt-0.5">' + (item.notes || '') + '</div>' +
+          '</div>';
+        }).join('');
+      }
+      document.getElementById("auditModal").classList.remove("hidden");
+    }
+
+    function closeAuditModal() {
+      document.getElementById("auditModal").classList.add("hidden");
+    }
+
+    function exportCSV() {
+      if (!currentScheduleData || currentScheduleData.length === 0) return;
+      const headers = ["Installment", "Due Date", "Opening Balance", "Principal", "Profit", "Total Installment", "Closing Balance", "Grace Period"];
+      const rows = currentScheduleData.map(function(r) {
+        return [
+          r.installment_number,
+          r.due_date,
+          r.opening_balance,
+          r.principal,
+          r.profit,
+          r.total_installment,
+          r.closing_balance,
+          r.is_grace_period
+        ];
+      });
+      const csvLines = [headers.join(",")];
+      for (let i = 0; i < rows.length; i++) {
+        csvLines.push(rows[i].join(","));
+      }
+      const csv = csvLines.join("\n");
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "Amortization_Schedule_" + Date.now() + ".csv";
+      a.click();
+    }
+
+    function resetDefaults() {
+      document.getElementById("principal").value = 50000;
+      document.getElementById("annualRate").value = 12.0;
+      document.getElementById("tenorMonths").value = 24;
+      document.getElementById("calcMethod").value = "equal_installments";
+      document.getElementById("frequency").value = "monthly";
+      document.getElementById("gracePeriod").value = 0;
+      handleCalculate();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" width="100%" height="100%">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#38BDF8"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#10B981"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#EF4444"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="380" rx="16" fill="#090D16"/>
+
+  <text x="450" y="38" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="19" font-weight="bold" fill="#F8FAFC">🔐 Multi-Tier Dynamic RBAC Security Gate Architecture</text>
+
+  <!-- Step 1: User Context -->
+  <g filter="url(#glow)">
+    <rect x="30" y="70" width="180" height="90" rx="10" fill="url(#cardBg)" stroke="#38BDF8" stroke-width="2"/>
+    <text x="120" y="105" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#38BDF8">👤 User Action</text>
+    <text x="120" y="130" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#CBD5E1">Role • Branch Scope</text>
+  </g>
+  <line x1="210" y1="115" x2="255" y2="115" stroke="#38BDF8" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- Gate 1: Page Level -->
+  <g filter="url(#glow)">
+    <rect x="260" y="70" width="170" height="90" rx="10" fill="url(#cardBg)" stroke="#F59E0B" stroke-width="2"/>
+    <text x="345" y="105" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#F59E0B">Gate 1: Page Auth</text>
+    <text x="345" y="130" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#CBD5E1">Scheme Verification</text>
+  </g>
+  <line x1="430" y1="115" x2="475" y2="115" stroke="#F59E0B" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- Gate 2: Branch Scope -->
+  <g filter="url(#glow)">
+    <rect x="480" y="70" width="170" height="90" rx="10" fill="url(#cardBg)" stroke="#F59E0B" stroke-width="2"/>
+    <text x="565" y="105" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#F59E0B">Gate 2: Branch Scope</text>
+    <text x="565" y="130" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#CBD5E1">Data Isolation Policy</text>
+  </g>
+  <line x1="650" y1="115" x2="695" y2="115" stroke="#F59E0B" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- Gate 3: Element Level -->
+  <g filter="url(#glow)">
+    <rect x="700" y="70" width="170" height="90" rx="10" fill="url(#cardBg)" stroke="#F59E0B" stroke-width="2"/>
+    <text x="785" y="105" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="bold" fill="#F59E0B">Gate 3: Button Level</text>
+    <text x="785" y="130" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#CBD5E1">Action Privilege Check</text>
+  </g>
+
+  <!-- Execution & Denial Outputs -->
+  <!-- Grant Execution -->
+  <line x1="785" y1="160" x2="785" y2="225" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrGreen)"/>
+
+  <g filter="url(#glow)">
+    <rect x="630" y="235" width="240" height="110" rx="12" fill="url(#cardBg)" stroke="#10B981" stroke-width="2"/>
+    <text x="750" y="270" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#10B981">✅ Execution Granted</text>
+    <text x="750" y="298" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#F8FAFC">Post GL Journal &amp; Transact</text>
+    <text x="750" y="322" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#94A3B8">📝 Log to Immutable Audit Trail</text>
+  </g>
+
+  <!-- Deny Execution -->
+  <g filter="url(#glow)">
+    <rect x="150" y="235" width="240" height="110" rx="12" fill="url(#cardBg)" stroke="#EF4444" stroke-width="2"/>
+    <text x="270" y="270" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#EF4444">❌ Access Denied</text>
+    <text x="270" y="298" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#F8FAFC">Hide Button / Block Request</text>
+    <text x="270" y="322" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#94A3B8">⚠️ Security Event Logged</text>
+  </g>
+
+  <!-- Failure paths to Deny -->
+  <path d="M 345 160 L 345 230" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrRed)"/>
+  <path d="M 565 160 L 565 190 L 270 190 L 270 230" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4" fill="none" marker-end="url(#arrRed)"/>
+</svg>
