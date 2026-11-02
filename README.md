@@ -4,14 +4,17 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![Database](https://img.shields.io/badge/Database-SQLAlchemy%20%7C%20PostgreSQL-336791.svg)](app/db)
 [![UI](https://img.shields.io/badge/UI-Interactive%20Dashboard-4f46e5.svg)](http://localhost:8000/dashboard)
-[![Tests](https://img.shields.io/badge/tests-8%20passed-brightgreen.svg)](#-running-automated-tests)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-purple.svg)](#-system-architecture)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **High-Precision Financial Amortization, Credit Workflow State Machine, Database Persistence & Interactive Web Dashboard**  
-> Engineered as a production-grade demonstration of complex financial calculation engines, state machine lifecycles, and modern RESTful backend architectures with full PostgreSQL/SQLAlchemy ORM integration.
+> Built as a public portfolio demonstration of complex financial calculation engines, state machine lifecycles, and modern RESTful backend architectures with full PostgreSQL/SQLAlchemy ORM integration.
 
 ---
+
+## Implementation context
+
+This repository contains a Python/FastAPI portfolio demo. The [Oracle implementation case study](docs/CASE_STUDY.md) describes related Oracle APEX, PL/SQL, and ORDS work. This demo is a separate implementation and does not contain the original enterprise application.
 
 ## 🖥️ Interactive Web UI Dashboard
 
