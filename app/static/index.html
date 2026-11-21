@@ -34,7 +34,7 @@
         <div>
           <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
             Lending Engine & Amortization Core
-            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">Production API</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium">Local Portfolio Demo</span>
           </h1>
           <p class="text-xs text-slate-400">High-Precision Amortization, Finite State Machine & Financial Reporting</p>
         </div>
@@ -623,10 +623,10 @@
           };
 
           const actions = nextActions[statusVal] || [];
-          const histJson = JSON.stringify(l.status_history || []).replace(/'/g, "&#39;");
+          const histJson = JSON.stringify(l.status_history || []).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
           const actionButtons = actions.map(function(act) {
-            return '<button onclick="transitionLoan('' + l.id + '', '' + act.to + '')" class="px-3 py-1.5 ' + act.color + ' text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-1">' +
+            return `<button onclick="transitionLoan('${l.id}', '${act.to}')" class="px-3 py-1.5 ${act.color} text-white text-xs font-bold rounded-lg shadow transition flex items-center gap-1">` +
               '<i class="fa-solid ' + act.icon + '"></i> ' + act.label +
             '</button>';
           }).join('');
@@ -645,7 +645,7 @@
               '</div>' +
             '</div>' +
             '<div class="flex items-center flex-wrap gap-2">' +
-              '<button onclick='viewAudit(' + histJson + ')' class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition flex items-center gap-1">' +
+              '<button onclick="viewAudit(' + histJson + ')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg transition flex items-center gap-1">' +
                 '<i class="fa-solid fa-clock-rotate-left"></i> Audit' +
               '</button>' +
               '<a href="/api/v1/loans/' + l.id + '/export-pdf" target="_blank" class="px-2.5 py-1.5 bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs font-semibold rounded-lg transition flex items-center gap-1">' +

@@ -12,7 +12,9 @@ init_db()
 app = FastAPI(
     title="Loan & Amortization Engine API",
     description="""
-## Enterprise Financial & Amortization Core Engine
+Local demonstration only. No authentication or production authorization is implemented.
+
+## Local Loan & Amortization Portfolio Demo
 Provides high-precision loan amortization schedules, early settlement rebate calculations, multi-stage credit approval state machines, and dynamic PDF contract exports.
     """,
     version="1.0.0",

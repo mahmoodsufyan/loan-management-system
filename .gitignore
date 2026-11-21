@@ -12,4 +12,4 @@ build/
 venv/
 *.db
 loans.db
-
+.test-data/

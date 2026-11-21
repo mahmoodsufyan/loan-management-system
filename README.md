@@ -1,122 +1,76 @@
-# 💰 Enterprise Loan & Amortization Engine API
+# Loan & Amortization API — Python portfolio demo
 
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![Database](https://img.shields.io/badge/Database-SQLAlchemy%20%7C%20PostgreSQL-336791.svg)](app/db)
-[![UI](https://img.shields.io/badge/UI-Interactive%20Dashboard-4f46e5.svg)](http://localhost:8000/dashboard)
-[![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-purple.svg)](#-system-architecture)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Tests](https://github.com/mahmoodsufyan/loan-management-system/actions/workflows/tests.yml/badge.svg)](https://github.com/mahmoodsufyan/loan-management-system/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **High-Precision Financial Amortization, Credit Workflow State Machine, Database Persistence & Interactive Web Dashboard**  
-> Built as a public portfolio demonstration of complex financial calculation engines, state machine lifecycles, and modern RESTful backend architectures with full PostgreSQL/SQLAlchemy ORM integration.
+A FastAPI demonstration of loan repayment calculations, a credit workflow, database persistence and repayment exports.
 
----
+Built by **Mahmood Sufyan**, Oracle APEX & PL/SQL developer working on AI applications and Python backends. [Portfolio](https://mahmoodsufyan.github.io/oracle-apex-portfolio/) · [Related Oracle case study](docs/CASE_STUDY.md)
 
-## Implementation context
+## Preview
 
-This repository contains a Python/FastAPI portfolio demo. The [Oracle implementation case study](docs/CASE_STUDY.md) describes related Oracle APEX, PL/SQL, and ORDS work. This demo is a separate implementation and does not contain the original enterprise application.
+![Loan calculator dashboard showing a synthetic repayment example](docs/images/dashboard.png)
 
-## 🖥️ Interactive Web UI Dashboard
+The public Python implementation is separate from my private Oracle APEX/PLSQL work. It demonstrates selected concepts, not a complete enterprise lending platform.
 
-The service includes an interactive single-page financial dashboard with live charts and real-time state machine transitions:
+## Implemented features
 
-* **Interactive Amortization Calculator:** Sliders & numeric inputs with instant calculation of Equal Installments (Annuity), Reducing Balance, and Islamic Murabaha methods.
-* **Repayment Breakdown Chart (Chart.js):** Visual progression of principal reduction vs profit/interest payments over time.
-* **Credit Approval State Machine Pipeline:** Submit, review, approve, disburse, and settle loans directly from the web interface.
-* **Audit Trail Viewer:** Real-time chronological audit history for each application.
-* **1-Click PDF & CSV Export:** Download client-ready PDF statements or CSV schedules directly from the browser.
+- Equal-installment, reducing-balance and flat-profit repayment calculations.
+- Configurable repayment frequency and grace periods.
+- Early settlement and unearned-profit rebate calculations.
+- Credit status transitions and stored status history.
+- SQLAlchemy persistence with local SQLite by default.
+- Interactive calculator and PDF/CSV repayment outputs.
 
----
+Flat-profit/Murabaha examples demonstrate arithmetic; they do not establish product, Sharia or regulatory approval.
 
-## 🏛️ System Architecture
+## Local setup
 
-<p align="center">
-  <img src="docs/images/system_architecture.svg" alt="System Architecture" width="100%" />
-</p>
+Use Python 3.11 or newer, create a virtual environment, then:
 
----
-
-## ✨ Key Financial & Technical Features
-
-### 1. Multi-Strategy Amortization Engine
-* **Equal Installments (Annuity / French Method):** Fixed periodic payment where interest decreases and principal repayment increases:
-  $$\text{PMT} = P \times \frac{r(1+r)^n}{(1+r)^n - 1}$$
-* **Reducing Balance (Declining Principal):** Equal principal repayments per cycle with interest computed strictly on remaining outstanding balance.
-* **Flat Rate / Islamic Murabaha (المرابحة الإسلامية):** Fixed profit calculated upfront over the entire loan term, divided equally across installments.
-* **Grace Period Support (فترة السماح):** Deferred principal repayment with profit-only servicing during initial months.
-
-### 2. Credit Lifecycle State Machine
-Strict finite state machine governing credit transitions:
-`DRAFT` ➔ `SUBMITTED` ➔ `CREDIT_REVIEW` ➔ `APPROVED` ➔ `DISBURSED` ➔ `ACTIVE` ➔ `SETTLED` / `DEFAULTED`.
-
-### 3. Early Settlement & Unearned Profit Rebate Engine
-Computes exact payoff amounts, deducting unearned future profit according to institution rebate percentage policies.
-
-### 4. Dynamic PDF Repayment Schedule & Contract Export
-Automated generation of client-ready PDF repayment schedules and statements.
-
-### 5. Modern Database Persistence (SQLAlchemy & PostgreSQL)
-* **SQLAlchemy ORM Models:** Full domain entities for `LoanApplicationModel`, `AuditLogModel`, and `DynamicRBACRuleModel`.
-* **PostgreSQL DDL Migration:** Ready-to-deploy schema in [`app/db/postgres_schema.sql`](app/db/postgres_schema.sql) with check constraints, indexing, and auto-update triggers.
-* **Zero-Configuration SQLite Fallback:** Automatically spins up `loans.db` locally when PostgreSQL is not configured.
-
----
-
-## 🚀 Quickstart Guide
-
-### Prerequisites
-* Python 3.10+ installed
-
-### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
+uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-### 2. Run the API Server & Dashboard
+After startup: [dashboard](http://127.0.0.1:8000/dashboard), [API docs](http://127.0.0.1:8000/docs), [health](http://127.0.0.1:8000/health).
+
+Alternatively, `docker compose up --build` binds the demo to localhost. These addresses are local, not hosted public previews. PostgreSQL DDL is provided in `app/db/postgres_schema.sql`; the default local setup and CI use SQLite. A PostgreSQL driver/configuration and separate verification are needed before claiming PostgreSQL compatibility.
+
+## Example calculation
+
+Use `POST /api/v1/calculator/schedule` through `/docs` with this synthetic example:
+
+```json
+{
+  "principal": "50000.00",
+  "annual_rate": "12.00",
+  "tenor_months": 24,
+  "method": "equal_installments",
+  "frequency": "monthly",
+  "grace_period_months": 0
+}
+```
+
+The response includes `total_installments`, `total_profit`, `total_payable` and a period-by-period `schedule`. For this monthly example there are 24 installments and the final closing balance is zero. See `/docs` for the complete schema.
+
+## Tests and CI
+
+Install the project dependencies first, then:
+
 ```bash
-uvicorn app.main:app --reload --port 8000
-```
-Open your browser and navigate to:
-* **Interactive Financial Dashboard:** [http://localhost:8000/dashboard](http://localhost:8000/dashboard) (or [http://localhost:8000/](http://localhost:8000/))
-* **Interactive Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
-* **ReDoc Documentation:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
-
-
----
-
-## 🐳 Docker Deployment
-
-Run with Docker in a single command:
-```bash
-docker-compose up --build
+python -m pytest -q
 ```
 
----
+Pytest uses a disposable database rather than an existing `loans.db`. GitHub Actions runs the tests on Python 3.11 and 3.13. Coverage includes calculator totals and final balance, workflow transitions, persistence and status history. The optional `python tests/run_tests.py` unittest runner uses the configured database and should only be used with a dedicated test `DATABASE_URL`.
 
-## 🧪 Running Automated Tests
+## Limitations
 
-Run the zero-dependency test suite:
-```bash
-python tests/run_tests.py
-```
+- Local educational/portfolio use only; no real borrower information should be entered.
+- Authentication and production authorization are not implemented. Workflow stages do not by themselves enforce staff permissions or segregation of duties.
+- This is not a complete banking system. Private Oracle integrations and screens are not included.
+- Schema initialization is not a migration system, and SQLite tests do not establish production concurrency or PostgreSQL behavior.
+- No measured performance, business-improvement percentage or uptime guarantee is claimed.
 
----
-
-## 📡 API Endpoints Overview
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/v1/calculator/schedule` | Generates full loan amortization schedule |
-| `POST` | `/api/v1/calculator/early-settlement` | Calculates early settlement payoff & profit rebate |
-| `POST` | `/api/v1/loans` | Creates a new loan application in `DRAFT` state |
-| `GET` | `/api/v1/loans` | Lists all loan applications |
-| `GET` | `/api/v1/loans/{id}` | Retrieves full loan profile and audit history |
-| `PATCH`| `/api/v1/loans/{id}/status` | Advances loan through the approval state machine |
-| `GET` | `/api/v1/loans/{id}/export-pdf`| Generates and downloads repayment schedule as PDF |
-
----
-
-## 📂 Related Case Study
-
-This public demo reflects the core algorithms of an enterprise 350+ module microfinance core banking system:  
-👉 **[Read the Full Enterprise Case Study](docs/CASE_STUDY.md)**
+See the [anonymized Oracle case study](docs/CASE_STUDY.md) for the separate professional background.
