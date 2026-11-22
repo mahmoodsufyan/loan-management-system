@@ -6,7 +6,7 @@
 
 A FastAPI demonstration of loan repayment calculations, a credit workflow, database persistence and repayment exports.
 
-Built by **Mahmood Sufyan**, Oracle APEX & PL/SQL developer working on AI applications and Python backends. [Portfolio](https://mahmoodsufyan.github.io/oracle-apex-portfolio/) · [Related Oracle case study](docs/CASE_STUDY.md)
+Built by **Mahmood Sufyan**, Oracle APEX & PL/SQL developer working on AI applications and Python backends. [Portfolio](https://mahmoodsufyan.github.io/) · [Related Oracle case study](docs/CASE_STUDY.md)
 
 ## Preview
 
