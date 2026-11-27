@@ -1,4 +1,4 @@
-# Loan & Amortization API — Python portfolio demo
+# Financing Management — Python/FastAPI portfolio demo
 
 [![Tests](https://github.com/mahmoodsufyan/loan-management-system/actions/workflows/tests.yml/badge.svg)](https://github.com/mahmoodsufyan/loan-management-system/actions/workflows/tests.yml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://python.org)
